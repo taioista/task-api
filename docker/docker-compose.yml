@@ -30,9 +30,9 @@ services:
       - postgres
     restart: unless-stopped
 
-  # customer:
-  #   image: taioista/customer:latest
-  #   container_name: customer
+  # taskapi:
+  #   image: taioista/taskapi:latest
+  #   container_name: taskapi
   #   ports:
   #     - "8080:8080"
   #   environment:
@@ -41,8 +41,6 @@ services:
   #     - spring
   #     - postgres
   #   depends_on:
-  #     - zipkin
-  #     - rabbitmq
   #     - postgres
 
 networks:

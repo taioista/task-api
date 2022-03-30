@@ -1,5 +1,6 @@
 package com.api.task.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.api.task.entities.Task;
@@ -38,5 +39,12 @@ public class TaskService {
 
     public Task saveTask(Task task) {
         return this.taskRepository.save(task);
+    }
+
+    public void updateTaskStatus(Long taskId, Status status) {
+        Task task = this.findById(taskId);
+        task.setStatus(status);
+        task.setLastUpdate(LocalDateTime.now());
+        this.saveTask(task);
     }
 }

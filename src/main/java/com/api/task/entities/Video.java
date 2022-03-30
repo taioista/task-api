@@ -2,6 +2,8 @@ package com.api.task.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -15,12 +17,13 @@ import lombok.Data;
 public class Video {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "VIDEO_ID", nullable = false)
     private String videoId;
 
-    @Column(name = "DESCRIPTION", nullable = false)
+    @Column(columnDefinition = "TEXT" , name = "DESCRIPTION", nullable = false)
     private String description;
 
     @Column(name = "URL", nullable = false)

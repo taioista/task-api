@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import feign.FeignException.FeignClientException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,27 +24,20 @@ public class YoutubeApiService {
     @Autowired
     private YoutubeFeignClient youtubeFeignClient;
 
-    public String getUploadPlaylistId(String key, String part, String id) {
-        String response = this.youtubeFeignClient.getUploadPlaylistId(key, part, id);
-        String uploads = "";
-        log.info("Request uploads id to Youtube Api with the parameters: {}", id, part);
-        try {
-            JsonNode responseJ = new ObjectMapper().readTree(response);
-            uploads = responseJ.get("items").get(0)
-                        .get("contentDetails").get("relatedPlaylists")
-                        .get("uploads").textValue();
-            log.info("Uploads playlist: {}", uploads);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-            log.error("Error while mapping json: {}", e);
-        } catch (JsonProcessingException e) {
-            log.error("Error while processing json: {}", e);
-        }
+    public String getUploadPlaylistId(String key, String id) 
+                throws JsonMappingException, JsonProcessingException, FeignClientException {
+        String response = this.youtubeFeignClient.getUploadPlaylistId(key, "contentDetails", id);
+        log.info("Request uploads id to Youtube Api with the parameters: {}", id, "contentDetails");
+        JsonNode responseJ = new ObjectMapper().readTree(response);
+        String uploads = responseJ.get("items").get(0)
+                    .get("contentDetails").get("relatedPlaylists")
+                    .get("uploads").textValue();
+        log.info("Uploads playlist: {}", uploads);
         return uploads;
     }
 
     public YoutubeApiDTO getVideosInfoByUploadsId(String playlistId, String key, String pageToken) {
-        log.info("Request videos info from Youtube Api with the parameters: {}", playlistId, pageToken);
+        log.info("Request videos info from Youtube Api with the parameters: {}, {}", playlistId, pageToken);
         Map<String, String> parameters = this.getMapParameters(playlistId, key, pageToken);
         YoutubeApiDTO youtubeApiDTO = this.youtubeFeignClient.getVideosByPlaylistId(parameters);
         return youtubeApiDTO;

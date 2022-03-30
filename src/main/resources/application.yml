@@ -14,6 +14,9 @@ spring:
             hibernate:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 "[format_sql]": true
+                jdbc:
+                    "[batch_size]": 5
+                    "[order_inserts]": true
         show-sql: true
 youtube:
-    api-key: AIzaSyDTG6AyoEZxcYEnsFUVm3KBCk-xancA4J0
+    api-key: ${API_KEY}

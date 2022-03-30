@@ -27,7 +27,9 @@ public class YoutubeApiJsonDeserializer extends StdDeserializer<YoutubeApiDTO> {
         JsonNode node = jp.getCodec().readTree(jp);
         
         YoutubeApiDTO dto = new YoutubeApiDTO();
-        dto.setNextPageToken(node.get("nextPageToken").asText());
+        if(node.hasNonNull("nextPageToken")) {
+            dto.setNextPageToken(node.get("nextPageToken").asText());
+        }
         dto.setTotalResults(node.get("pageInfo").get("totalResults").asLong());
 
         List<VideoDTO> videos = new ArrayList<VideoDTO>();

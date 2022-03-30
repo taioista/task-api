@@ -1,19 +1,15 @@
 package com.api.task.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.api.task.clients.YoutubeFeignClient;
 import com.api.task.dtos.VideoDTO;
-import com.api.task.dtos.YoutubeApiDTO;
+import com.api.task.entities.Channel;
 import com.api.task.entities.Task;
-import com.api.task.entities.Video;
+import com.api.task.services.ChannelService;
 import com.api.task.services.TaskService;
 import com.api.task.services.VideoService;
-import com.api.task.services.YoutubeApiService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,23 +18,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/tasks")
+@RequestMapping("v1/api/tasks")
 public class TaskController {
 
     @Autowired
     private TaskService taskService;
 
     @Autowired
+    private ChannelService channelService;
+
+    @Autowired
     private VideoService videoService;
-
-    @Autowired
-    private YoutubeApiService youtubeApiService;
-
-    @Autowired
-    private YoutubeFeignClient youtubeClient;
-
-    @Value("${youtube.api-key}")
-    private String apiKey;
     
     /**
      * Creates a new task to parse the channel, returns taskId
@@ -48,9 +38,8 @@ public class TaskController {
     @PostMapping("/{youtubeChannelId}")
     public ResponseEntity<Long> createTask(@PathVariable String youtubeChannelId) {
         Long taskId = this.taskService.createTaskAndReturnId(youtubeChannelId);
-
-        //this.youtubeApiService.getUploadPlaylistId(key, part, id)
-
+        Long channelId = this.channelService.createChannelAndReturnId(youtubeChannelId);
+        this.videoService.process(youtubeChannelId, taskId, channelId);
         return ResponseEntity.ok(taskId);
     }
 
@@ -72,13 +61,10 @@ public class TaskController {
      * @return Task
      */
     @GetMapping("/{taskId}")
-    //public ResponseEntity<List<Video>> findById(@PathVariable Long taskId) {
-        public ResponseEntity<VideoDTO> findById(@PathVariable Long taskId) {
-        YoutubeApiDTO testDTO = youtubeApiService.getVideosInfoByUploadsId("UUSBp6wFCG4bVtk1TUlMyIQQ", apiKey, "");
-        VideoDTO test = null;//youtubeClient.getVideosByPlaylistId("UUSBp6wFCG4bVtk1TUlMyIQQ", "AIzaSyDTG6AyoEZxcYEnsFUVm3KBCk-xancA4J0", "snippet");
-        System.out.println(test);
+    public ResponseEntity<List<VideoDTO>> findById(@PathVariable Long taskId) {
         Task task = this.taskService.findById(taskId);
-        List<Video> videos = new ArrayList<Video>();//this.videoService.findByChannel(task.getYoutubeChannelId());
-        return ResponseEntity.ok(test);
+        Channel channel = this.channelService.getChannelByChannelId(task.getYoutubeChannelId());
+        List<VideoDTO> videos = this.videoService.getVideoDTOByChannelId(channel.getId());
+        return ResponseEntity.ok(videos);
     }
 }
