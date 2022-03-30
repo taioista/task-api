@@ -12,11 +12,16 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "channel")
+@NoArgsConstructor
 public class Channel {
+
+    public Channel(Long id) {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

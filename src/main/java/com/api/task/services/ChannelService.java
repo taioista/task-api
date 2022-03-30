@@ -22,6 +22,12 @@ public class ChannelService {
         return channel.getId();
     }
 
+    public Channel createChannelAndReturnIt(String youtubeChannelId) {
+        Channel channel = this.buildChannel(youtubeChannelId);
+        channel = this.saveChannel(channel);
+        return channel;
+    }
+
     public Channel saveChannel(Channel channel) {
         return this.channelRepository.save(channel);
     }

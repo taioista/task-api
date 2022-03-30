@@ -48,6 +48,10 @@ public class VideoService {
         return this.videoRepository.findByChannelId(channelId);
     }
 
+    public void deleteAllInBatch(List<Video> videos) {
+        this.videoRepository.deleteAllInBatch(videos);
+    }
+
     @Transactional
     @Async("threadPoolYoutubeApiExecutor")
     public void process(String youtubeChannelId, Long taskId, Long channelId) {
