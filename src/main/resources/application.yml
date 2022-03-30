@@ -17,6 +17,7 @@ spring:
                 jdbc:
                     "[batch_size]": 5
                     "[order_inserts]": true
+                generate_statistics: true
         show-sql: true
 youtube:
     api-key: ${API_KEY}

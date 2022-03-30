@@ -2,6 +2,8 @@ package com.api.task.services;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import com.api.task.dtos.VideoDTO;
 import com.api.task.dtos.YoutubeApiDTO;
 import com.api.task.dtos.mappers.VideoMapper;
@@ -12,6 +14,7 @@ import com.api.task.repositories.VideoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +39,6 @@ public class VideoService {
     @Autowired
     private VideoMapper videoMapper;
 
-    //@Transactional
     public List<VideoDTO> getVideoDTOByChannelId(Long channelId) {
         List<Video> videos = this.findByChannelId(channelId);
         return this.videoMapper.mapToDTO(videos);
@@ -46,6 +48,8 @@ public class VideoService {
         return this.videoRepository.findByChannelId(channelId);
     }
 
+    @Transactional
+    @Async("threadPoolYoutubeApiExecutor")
     public void process(String youtubeChannelId, Long taskId, Long channelId) {
         try {
             this.taskService.updateTaskStatus(taskId, Status.PROCESSING);
