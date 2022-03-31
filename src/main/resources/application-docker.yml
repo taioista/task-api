@@ -1,0 +1,23 @@
+server:
+    port: 8080
+spring:
+    application:
+        name: task
+    datasource:
+        username: apiuser
+        password: apiuser
+        url: jdbc:postgresql://postgres:5432/apidatabase
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                "[format_sql]": true
+                jdbc:
+                    "[batch_size]": 5
+                    "[order_inserts]": true
+                generate_statistics: true
+        show-sql: true
+youtube:
+    api-key: ${API_KEY}
