@@ -30,18 +30,19 @@ services:
       - postgres
     restart: unless-stopped
 
-  # taskapi:
-  #   image: taioista/taskapi:latest
-  #   container_name: taskapi
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - SPRING_PROFILES_ACTIVE=docker
-  #   networks:
-  #     - spring
-  #     - postgres
-  #   depends_on:
-  #     - postgres
+  task:
+    image: taioista/task:latest
+    container_name: task
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - API_KEY=${API_KEY}
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - postgres
 
 networks:
   postgres:
