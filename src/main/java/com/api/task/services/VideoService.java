@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import com.api.task.dtos.UploadPlaylistDTO;
 import com.api.task.dtos.VideoDTO;
 import com.api.task.dtos.YoutubeApiDTO;
 import com.api.task.dtos.mappers.VideoMapper;
@@ -37,6 +38,9 @@ public class VideoService {
     private TaskService taskService;
 
     @Autowired
+    private ChannelService channelService;
+
+    @Autowired
     private VideoMapper videoMapper;
 
     public List<VideoDTO> getVideoDTOByChannelId(Long channelId) {
@@ -54,16 +58,23 @@ public class VideoService {
 
     @Transactional
     @Async("threadPoolYoutubeApiExecutor")
-    public void process(String youtubeChannelId, Long taskId, Long channelId) {
+    public void process(String youtubeChannelId, Long taskId, Channel channel) {
         try {
             this.taskService.updateTaskStatus(taskId, Status.PROCESSING);
-            String uploadsId = this.youtubeApiService.getUploadPlaylistId(apiKey, youtubeChannelId);
-            YoutubeApiDTO dto = this.youtubeApiService.getVideosInfoByUploadsId(uploadsId, apiKey, null);
-            this.insertVideosBatchFrom(dto.getVideos(), channelId);
+            UploadPlaylistDTO uploadPlaylistDTO = this.youtubeApiService.getUploadPlaylistId(apiKey, youtubeChannelId);
+            
+            if(uploadPlaylistDTO.getVideoCount() > 0) {
+                YoutubeApiDTO youtubeApiDTO = this.youtubeApiService.getVideosInfoByUploadsId(uploadPlaylistDTO.getUploads(), apiKey, null);
+                
+                channel.setVideoCount(youtubeApiDTO.getTotalResults());
+                this.channelService.saveChannel(channel);
 
-            while(StringUtils.hasLength(dto.getNextPageToken())) {
-                dto = this.youtubeApiService.getVideosInfoByUploadsId(uploadsId, apiKey, dto.getNextPageToken());
-                this.insertVideosBatchFrom(dto.getVideos(), channelId);
+                this.insertVideosBatchFrom(youtubeApiDTO.getVideos(), channel);
+
+                while(StringUtils.hasLength(youtubeApiDTO.getNextPageToken())) {
+                    youtubeApiDTO = this.youtubeApiService.getVideosInfoByUploadsId(uploadPlaylistDTO.getUploads(), apiKey, youtubeApiDTO.getNextPageToken());
+                    this.insertVideosBatchFrom(youtubeApiDTO.getVideos(), channel);
+                }
             }
 
             this.taskService.updateTaskStatus(taskId, Status.DONE);
@@ -73,10 +84,8 @@ public class VideoService {
         }
     }
 
-    public void insertVideosBatchFrom(List<VideoDTO> videosDTO, Long channelId) {
+    public void insertVideosBatchFrom(List<VideoDTO> videosDTO, Channel channel) {
         List<Video> videos = this.videoMapper.mapToEntity(videosDTO);
-        Channel channel = new Channel();
-        channel.setId(channelId);
         videos.forEach(video -> {
             video.setChannel(channel);
         });

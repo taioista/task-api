@@ -38,8 +38,8 @@ public class TaskController {
     @PostMapping("/{youtubeChannelId}")
     public ResponseEntity<Long> createTask(@PathVariable String youtubeChannelId) {
         Long taskId = this.taskService.createTaskAndReturnId(youtubeChannelId);
-        Long channelId = this.channelService.createChannelAndReturnId(youtubeChannelId);
-        this.videoService.process(youtubeChannelId, taskId, channelId);
+        Channel channel = this.channelService.createChannelAndReturnIt(youtubeChannelId);
+        this.videoService.process(youtubeChannelId, taskId, channel);
         return ResponseEntity.ok(taskId);
     }
 

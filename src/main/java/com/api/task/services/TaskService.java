@@ -20,7 +20,7 @@ public class TaskService {
         return taskRepository.getById(taskId);
     }
 
-    public List<Task> findByStatus(List<Status> status) {
+    public List<Task> findByStatusList(List<Status> status) {
         return this.taskRepository.findByStatusList(status);
     }
 

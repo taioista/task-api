@@ -4,8 +4,8 @@ spring:
     application:
         name: task
     datasource:
-        username: apiuser
-        password: apiuser
+        username: ${API_DB_USERNAME}
+        password: ${API_DB_PASSWORD}
         url: jdbc:postgresql://localhost:5432/apidatabase
     jpa:
         hibernate:
@@ -17,7 +17,7 @@ spring:
                 jdbc:
                     "[batch_size]": 5
                     "[order_inserts]": true
-                generate_statistics: true
-        show-sql: true
+                generate_statistics: false
+        show-sql: false
 youtube:
     api-key: ${API_KEY}

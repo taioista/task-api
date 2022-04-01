@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.api.task.clients.YoutubeFeignClient;
+import com.api.task.dtos.UploadPlaylistDTO;
 import com.api.task.dtos.YoutubeApiDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -24,16 +25,21 @@ public class YoutubeApiService {
     @Autowired
     private YoutubeFeignClient youtubeFeignClient;
 
-    public String getUploadPlaylistId(String key, String id) 
+    public UploadPlaylistDTO getUploadPlaylistId(String key, String id) 
                 throws JsonMappingException, JsonProcessingException, FeignClientException {
-        String response = this.youtubeFeignClient.getUploadPlaylistId(key, "contentDetails", id);
+        String response = this.youtubeFeignClient.getUploadPlaylistId(key, "contentDetails,statistics", id);
         log.info("Request uploads id to Youtube Api with the parameters: {}", id, "contentDetails");
+        UploadPlaylistDTO dto = new UploadPlaylistDTO();
         JsonNode responseJ = new ObjectMapper().readTree(response);
         String uploads = responseJ.get("items").get(0)
                     .get("contentDetails").get("relatedPlaylists")
                     .get("uploads").textValue();
+        dto.setUploads(uploads);
+        Long videoCount = responseJ.get("items").get(0)
+                            .get("statistics").get("videoCount").asLong();
+        dto.setVideoCount(videoCount);
         log.info("Uploads playlist: {}", uploads);
-        return uploads;
+        return dto;
     }
 
     public YoutubeApiDTO getVideosInfoByUploadsId(String playlistId, String key, String pageToken) {

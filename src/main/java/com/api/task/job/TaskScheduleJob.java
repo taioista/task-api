@@ -29,27 +29,19 @@ public class TaskScheduleJob {
     @Autowired
     private TaskService taskService;
 
-    @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 1)
+    @Scheduled(timeUnit = TimeUnit.DAYS, fixedDelay = 1)
     public void SearchAndRepair() {
-        List<Status> listStatus = new ArrayList<Status>();
-        listStatus.add(Status.CREATED);
-        listStatus.add(Status.ERROR);
-        listStatus.add(Status.PROCESSING);
-        List<Task> tasks = this.taskService.findByStatus(listStatus);
+        List<Status> listStatus = buildListStatus();
+        List<Task> tasks = this.taskService.findByStatusList(listStatus);
         if(tasks != null && !tasks.isEmpty()) {
             List<Task> tasksFiltered = tasks.stream().filter(task -> {
-                if(task.getStatus().equals(Status.CREATED) 
-                    || task.getStatus().equals(Status.PROCESSING)) {
-                    return task.getLastUpdate().isAfter(task.getLastUpdate().plusDays(1));
-                } else {
-                    return true;
-                }
+                return isTaskError(task);
             }).collect(Collectors.toList());
             if(tasksFiltered != null && !tasksFiltered.isEmpty()) {
                 Channel channel = this.channelService.getChannelByChannelId(tasksFiltered.get(0).getYoutubeChannelId());
                 for(int i=0; i < tasksFiltered.size(); i++) {
                     if(channel != null 
-                            && !channel.getChannelId().equals(tasksFiltered.get(i).getYoutubeChannelId())) {
+                            && isNotSameChannel(tasksFiltered.get(i), channel)) {
                         channel = this.channelService.getChannelByChannelId(tasksFiltered.get(i).getYoutubeChannelId());
                     }
 
@@ -62,10 +54,31 @@ public class TaskScheduleJob {
                         this.videoService.deleteAllInBatch(videos);
                     }
 
-                    this.videoService.process(tasksFiltered.get(i).getYoutubeChannelId(), tasksFiltered.get(i).getId(), channel.getId());
+                    this.videoService.process(tasksFiltered.get(i).getYoutubeChannelId(), tasksFiltered.get(i).getId(), channel);
                 }
             }
         }
+    }
+
+    private boolean isNotSameChannel(Task task, Channel channel) {
+        return !channel.getChannelId().equals(task.getYoutubeChannelId());
+    }
+
+    private boolean isTaskError(Task task) {
+        if(task.getStatus().equals(Status.CREATED) 
+            || task.getStatus().equals(Status.PROCESSING)) {
+            return task.getLastUpdate().isAfter(task.getLastUpdate().plusDays(1));
+        } else {
+            return true;
+        }
+    }
+
+    private List<Status> buildListStatus() {
+        List<Status> listStatus = new ArrayList<Status>();
+        listStatus.add(Status.CREATED);
+        listStatus.add(Status.ERROR);
+        listStatus.add(Status.PROCESSING);
+        return listStatus;
     }
 
 }

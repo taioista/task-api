@@ -35,7 +35,7 @@ public class ChannelService {
     private Channel buildChannel(String youtubeChannelId) {
         Channel channel = new Channel();
         channel.setChannelId(youtubeChannelId);
-        channel.setCountVideos(0L);
+        channel.setVideoCount(0L);
         return channel;
     }
 }

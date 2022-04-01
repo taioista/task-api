@@ -30,8 +30,8 @@ public class Channel {
     @Column(name = "YOUTUBE_CHANNEL_ID", nullable = false)
     private String channelId;
 
-    @Column(name = "COUNT", nullable = false)
-    private Long countVideos;
+    @Column(name = "VIDEO_COUNT", nullable = false)
+    private Long videoCount;
 
     @OneToMany(mappedBy = "channel", fetch=FetchType.LAZY)
     private List<Video> videos; 
