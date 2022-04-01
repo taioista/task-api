@@ -12,6 +12,8 @@ The application utilise HTTP API that consists of two methods:
 	2. GET /api/tasks/ - returns the list of created tasks with their statuses
 
 	3. GET /api/tasks/{taskId} - returns list of videos that have been found in the specified channel as an array of objects: video id, description, link to the video
+	
+In addition to that, there is a job that runs once a day and fix possible problems with the tasks that are created previously. 
 
 
 The application was developed with:
