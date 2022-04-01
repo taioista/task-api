@@ -1,0 +1,42 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: apiuser
+      POSTGRES_PASSWORD: apiuser
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+      - ../scripts/database/ddl/database.sql:/docker-entrypoint-initdb.d/1.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  task:
+    image: ${REPOSITORY_NAME}/task:latest
+    container_name: task
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - API_KEY=${API_KEY}
+      - API_DB_USERNAME=${API_DB_USERNAME}
+      - API_DB_PASSWORD=${API_DB_PASSWORD}
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
+  spring:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
